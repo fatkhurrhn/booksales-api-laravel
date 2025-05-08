@@ -25,7 +25,7 @@ Ikuti langkah-langkah di bawah ini untuk menjalankan proyek ini secara lokal.
 Clone repository ini ke komputer lokal:
 
 ```
-git clone https://github.com/[username]/booksales-api-laravel.git
+git clone https://github.com/fatkhurrhn/booksales-api-laravel.git
 ```
 
 ### 2. Instalasi Dependensi
