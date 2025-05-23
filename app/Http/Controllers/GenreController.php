@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Genre;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 use function Pest\Laravel\json;
@@ -61,5 +62,45 @@ class GenreController extends Controller
             'message' => 'data berhasil ditambah bro',
             'data' => $genre
         ], 201);
+    }
+
+    public function show(string $id) {
+        $genre = Genre::find($id);
+
+        if (!$genre) {
+            return response()->json([
+                'sucsess' => false,
+                'message' => 'data yang lu cari gaada bro'
+            ], 404);
+        }
+
+        return response()->json([
+            'siuccess' => true,
+            'message' => 'get dddetail resource',
+            'data' => $genre
+        ]);
+    }
+
+    public function destroy(string $id){
+        $genre = Genre::find($id);
+
+        if (!$genre) {
+            return response()->json([
+                'sucsess' => false,
+                'message' => 'resource not found'
+            ], 404);
+        }
+
+        if ($genre->cover_photo) {
+            //Delete from storage
+            Storage::disk('public')->delete('genre/' .$genre->cover_photo);
+        }
+
+        $genre->delete();
+
+        return response()->json([
+            'siuccess' => true,
+            'message' => 'data berhasil di hapus',
+        ]);
     }
 }

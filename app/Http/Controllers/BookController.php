@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 use function Pest\Laravel\json;
@@ -71,5 +72,45 @@ class BookController extends Controller
             'message' => 'data berhasil ditambah bro',
             'data' => $book
         ], 201);
+    }
+
+    public function show(string $id) {
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json([
+                'sucsess' => false,
+                'message' => 'data yang lu cari gaada bro'
+            ], 404);
+        }
+
+        return response()->json([
+            'siuccess' => true,
+            'message' => 'get dddetail resource',
+            'data' => $book
+        ]);
+    }
+
+    public function destroy(string $id){
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json([
+                'sucsess' => false,
+                'message' => 'resource not found'
+            ], 404);
+        }
+
+        if ($book->cover_photo) {
+            //Delete from storage
+            Storage::disk('public')->delete('book/' .$book->cover_photo);
+        }
+
+        $book->delete();
+
+        return response()->json([
+            'siuccess' => true,
+            'message' => 'data berhasil di hapus',
+        ]);
     }
 }

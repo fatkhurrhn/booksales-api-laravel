@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Author;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 use function Pest\Laravel\json;
@@ -63,5 +64,45 @@ class AuthorController extends Controller
             'message' => 'data berhasil ditambah bro',
             'data' => $author
         ], 201);
+    }
+
+    public function show(string $id) {
+        $author = Author::find($id);
+
+        if (!$author) {
+            return response()->json([
+                'sucsess' => false,
+                'message' => 'data yang lu cari gaada bro'
+            ], 404);
+        }
+
+        return response()->json([
+            'siuccess' => true,
+            'message' => 'get dddetail resource',
+            'data' => $author
+        ]);
+    }
+
+    public function destroy(string $id){
+        $author = Author::find($id);
+
+        if (!$author) {
+            return response()->json([
+                'sucsess' => false,
+                'message' => 'resource not found'
+            ], 404);
+        }
+
+        if ($author->cover_photo) {
+            //Delete from storage
+            Storage::disk('public')->delete('author/' .$author->cover_photo);
+        }
+
+        $author->delete();
+
+        return response()->json([
+            'siuccess' => true,
+            'message' => 'data berhasil di hapus',
+        ]);
     }
 }
