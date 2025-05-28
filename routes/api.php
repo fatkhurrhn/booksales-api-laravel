@@ -1,29 +1,43 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Route untuk user login dengan Sanctum
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// Public routes
 Route::get('/', [HomeController::class, 'index']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
 
-Route::get('/books', [BookController::class, 'index']);
-Route::post('/books', [BookController::class, 'store']);
-Route::get('/books/{$id}', [BookController::class, 'show']);
-Route::delete('/books/{$id}', [BookController::class, 'destroy']);
+// Hanya bisa akses index dan show book secara publik
+Route::apiResource('/books', BookController::class)->only(['index', 'show']);
 
-Route::get('/genres', [GenreController::class, 'index']);
-Route::post('/genres', [GenreController::class, 'store']);
-Route::get('/genres/{$id}', [GenreController::class, 'show']);
-Route::delete('/genres/{$id}', [GenreController::class, 'destroy']);
+Route::apiResource('/transaction', TransactionController::class)->only(['index', 'show']);
 
-Route::get('/authors', [AuthorController::class, 'index']);
-Route::post('/authors', [AuthorController::class, 'store']);
-Route::get('/authors/{$id}', [AuthorController::class, 'show']);
-Route::delete('/authors/{$id}', [AuthorController::class, 'destroy']);
+// Route yang butuh autentikasi
+Route::middleware(['auth:api'])->group(function () {
+
+    // hanya bisa dilihat oleh user yang login
+    Route::get('/genres', [GenreController::class, 'index']);
+    Route::apiResource('/transaction', TransactionController::class)->only(['index', 'store', 'show']);
+
+    // Role admin
+    Route::middleware(['role:admin'])->group(function () {
+        Route::apiResource('/books', BookController::class)->only(['store', 'update', 'destroy']);
+        Route::apiResource('/genres', GenreController::class)->only(['store', 'show', 'destroy']);
+        Route::apiResource('/authors', AuthorController::class);
+
+        Route::apiResource('/transaction', TransactionController::class)->only(['update', 'destroy']);
+    });
+});
