@@ -4,41 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\Genre;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-
-use function Pest\Laravel\json;
-use function PHPUnit\Framework\isEmpty;
-
 
 class GenreController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         $genres = Genre::all();
 
-        if ($genres>isEmpty()) {
+        if ($genres->isEmpty()) {
             return response()->json([
-                "succsess" => true,
-                "message" => "resource data nofound"
+                "success" => true,
+                "message" => "Resource data not found!"
             ], 200);
         }
 
         return response()->json([
             "success" => true,
-            "message" => "List of genres",
+            "message" => "Get all resources",
             "data" => $genres
-        ]);
+        ], 200);
     }
 
     public function store(Request $request)
     {
-        // validator
+        // 1. validator
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:100',
-            'description' => 'nullable|string',
+            'name' => 'required|string|max:100',
+            'description' => 'required|string',
         ]);
 
-        // ceik validasi eror
+        // 2. check validator error
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -46,61 +42,87 @@ class GenreController extends Controller
             ], 422);
         }
 
-        // upload foto
-        $image = $request->file('cover_photo');
-        $image->store('genres', 'public');
-
-        //tambah data
+        // 3. insert data
         $genre = Genre::create([
-            'title' => $request->title,
+            'name' => $request->name,
             'description' => $request->description,
         ]);
 
-        // response
+        // 4. response
         return response()->json([
-            'siccess' => true,
-            'message' => 'data berhasil ditambah bro',
+            'success' => true,
+            'message' => 'Resource added successfully!',
             'data' => $genre
         ], 201);
     }
 
-    public function show(string $id) {
+    public function show(string $id)
+    {
         $genre = Genre::find($id);
 
         if (!$genre) {
             return response()->json([
-                'sucsess' => false,
-                'message' => 'data yang lu cari gaada bro'
+                'success' => false,
+                'message' => 'Resource not found'
             ], 404);
         }
 
         return response()->json([
-            'siuccess' => true,
-            'message' => 'get dddetail resource',
+            'success' => true,
+            'message' => 'Get detail resource',
             'data' => $genre
-        ]);
+        ], 200);
     }
 
-    public function destroy(string $id){
+    public function update(string $id, Request $request)
+    {
+        // 1. mencari data
         $genre = Genre::find($id);
 
         if (!$genre) {
             return response()->json([
-                'sucsess' => false,
-                'message' => 'resource not found'
+                'success' => false,
+                'message' => 'Resource not found'
             ], 404);
         }
 
-        if ($genre->cover_photo) {
-            //Delete from storage
-            Storage::disk('public')->delete('genre/' .$genre->cover_photo);
+        // 2. validator
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:100',
+            'description' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()
+            ], 422);
         }
 
-        $genre->delete();
+        // 3. siapkan data yang ingin diupdate
+        $data = [
+            'name' => $request->name,
+            'description' => $request->description,
+        ];
+
+        // 4. update data baru ke database
+        $genre->update($data);
 
         return response()->json([
-            'siuccess' => true,
-            'message' => 'data berhasil di hapus',
-        ]);
+            'success' => true,
+            'message' => 'Resource updated successfully!',
+            'data' => $genre
+        ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $genres = Genre::find($id);
+        if (!$genres) {
+            return response()->json(['message' => 'Genre tidak ditemukan'], 404);
+        }
+
+        $genres->delete();
+        return response()->json(['message' => 'Genre berhasil dihapus'], 200);
     }
 }

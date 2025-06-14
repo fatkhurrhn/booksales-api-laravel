@@ -6,22 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('books', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // Primary key
             $table->string('title');
             $table->text('description')->nullable();
-            $table->integer('price')->unsigned();
-            $table->integer('stock')->default(0);
-            $table->string('cover_photo')->nullable();
-            $table->foreignId('genre_id')->constrained('genre')->onDelete('cascade');
-            $table->foreignId('author_id')->constrained('author')->onDelete('cascade');
+            $table->decimal('price', 10, 2);
+            $table->integer('stock');
+            $table->string('cover_photo')->nullable(); // kalau boleh kosong
+
+            // Relasi ke genres & authors
+            $table->foreignId('genre_id')->constrained()->onDelete('cascade');
+            $table->foreignId('author_id')->constrained()->onDelete('cascade');
+
             $table->timestamps();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('books');
     }

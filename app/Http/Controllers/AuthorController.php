@@ -7,40 +7,36 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
-use function Pest\Laravel\json;
-use function PHPUnit\Framework\isEmpty;
-
 class AuthorController extends Controller
 {
-    //
     public function index()
     {
-        $authors = Author::all();
+        $author = Author::with(['books'])->get();
 
-        if ($authors > isEmpty()) {
+        if ($author->isEmpty()) {
             return response()->json([
-                "succsess" => true,
-                "message" => "resource data nofound"
+                "success" => true,
+                "message" => "Resource data not found!"
             ], 200);
         }
 
         return response()->json([
             "success" => true,
-            "message" => "List of authors",
-            "data" => $authors
-        ]);
+            "message" => "Get all resources",
+            "data" => $author
+        ], 200);
     }
 
     public function store(Request $request)
     {
-        // validator
+        // 1. validator
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:100',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'bio' => 'nullable|string',
+            'photo' => 'required|image|mimes:jpeg,jpg,png|max:2048',
+            'bio' => 'required|string',
         ]);
 
-        // ceik validasi eror
+        // 2. check validator error
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -48,61 +44,118 @@ class AuthorController extends Controller
             ], 422);
         }
 
-        // upload foto
-        $image = $request->file('cover_photo');
+        // 3. upload image
+        $image = $request->file('photo');
         $image->store('authors', 'public');
 
-        //tambah data
+        // 4. insert data
         $author = Author::create([
-            'title' => $request->title,
-            'description' => $request->description,
+            'name' => $request->name,
+            'photo' => $image->hashName(),
+            'bio' => $request->bio,
         ]);
 
-        // response
+        // 5. response
         return response()->json([
-            'siccess' => true,
-            'message' => 'data berhasil ditambah bro',
+            'success' => true,
+            'message' => 'Resource added successfully!',
             'data' => $author
         ], 201);
     }
 
-    public function show(string $id) {
+    public function show(string $id)
+    {
         $author = Author::find($id);
 
         if (!$author) {
             return response()->json([
-                'sucsess' => false,
-                'message' => 'data yang lu cari gaada bro'
+                'success' => false,
+                'message' => 'Resource not found'
             ], 404);
         }
 
         return response()->json([
-            'siuccess' => true,
-            'message' => 'get dddetail resource',
+            'success' => true,
+            'message' => 'Get detail resource',
             'data' => $author
-        ]);
+        ], 200);
     }
 
-    public function destroy(string $id){
+    public function update(string $id, Request $request)
+    {
+        // 1. mencari data
         $author = Author::find($id);
 
         if (!$author) {
             return response()->json([
-                'sucsess' => false,
-                'message' => 'resource not found'
+                'success' => false,
+                'message' => 'Resource not found'
             ], 404);
         }
 
-        if ($author->cover_photo) {
-            //Delete from storage
-            Storage::disk('public')->delete('author/' .$author->cover_photo);
+        // 2. validator
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:100',
+            'photo' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
+            'bio' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()
+            ], 422);
+        }
+
+        // 3. siapkan data yang ingin diupdate
+        $data = [
+            'name' => $request->name,
+            'bio' => $request->bio,
+        ];
+
+        // 4. handle image (upload & delete image)
+        if ($request->hasFile('photo')) {
+            $image = $request->file('photo');
+            $image->store('authors', 'public');
+
+            if ($author->photo) {
+                Storage::disk('public')->delete('authors/' . $author->photo);
+            }
+
+            $data['photo'] = $image->hashName();
+        }
+
+        // 5. update data baru ke database
+        $author->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Resource updated successfully!',
+            'data' => $author
+        ], 200);
+    }
+
+    public function destroy(string $id)
+    {
+        $author = Author::find($id);
+
+        if (!$author) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Resource not found'
+            ], 404);
+        }
+
+        if ($author->photo) {
+            // delete from storage
+            Storage::disk('public')->delete('authors/' . $author->photo);
         }
 
         $author->delete();
 
         return response()->json([
-            'siuccess' => true,
-            'message' => 'data berhasil di hapus',
+            'success' => true,
+            'message' => 'Delete resource successfully'
         ]);
     }
 }

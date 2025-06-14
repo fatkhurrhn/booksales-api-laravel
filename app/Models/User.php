@@ -13,7 +13,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -50,12 +50,30 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    // --------------------------
-    public function getJWTIdentifier() {
+    // Tambahkan di dalam class User
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'customer_id');
+    }
+
+    // Method untuk check apakah user adalah admin
+    public function isAdmin()
+    {
+        return $this->role === 'admin'; // Sesuaikan dengan field role di database
+    }
+    // ---------------------------------------
+    public function getJWTIdentifier()
+    {
         return $this->getKey();
     }
 
-    public function getJWTCustomClaims() {
-        return[];
+    public function getJWTCustomClaims()
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'role' => $this->role,
+        ];
     }
 }

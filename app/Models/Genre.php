@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Genre extends Model
 {
-    protected $table = 'genres';
+    use HasFactory;
 
-    protected $fillable = [
-        'name', 'description'
-    ];
+    protected $table = 'genres';
+    
+    protected $fillable = ['name', 'description'];
 }

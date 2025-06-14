@@ -17,6 +17,9 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
             $table->decimal('total_amount', 10, 2);
+            $table->enum('status', ['pending', 'completed', 'cancelled'])
+                ->default('pending');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

@@ -6,76 +6,76 @@ use App\Models\Book;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
-use function PHPUnit\Framework\isEmpty;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
     public function index()
     {
-        $transactions = Transaction::with('user', 'book')->get();
+        $transactions = Transaction::with(['customer', 'book'])->get();
 
-        if ($transactions > isEmpty()) {
+        if ($transactions->isEmpty()) {
             return response()->json([
-                "succsess" => true,
-                "message" => "resource data nofound"
+                "success" => true,
+                "message" => "Resource data not found!"
             ], 200);
         }
 
         return response()->json([
             "success" => true,
-            "message" => "get all resources",
+            "message" => "Get all resources",
             "data" => $transactions
         ]);
     }
 
-    public function store(Request $request) {
-        // validasi
+    public function store(Request $request)
+    {
+        // 1. validator & cek validator
         $validator = Validator::make($request->all(), [
-            'book_id' => 'required|exists:book_id',
-            'quantity' => 'required|integer|min:1',
+            'book_id' => 'required|exists:books,id',
+            'quantity' => 'required|integer|min:1'
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'validator error',
+                'message' => 'Validation error',
                 'data' => $validator->errors()
             ], 422);
         }
 
-        // generate number unique
+        // 2. generate orderNumber -> unique | ORD-023948302
         $uniqueCode = "ORD-" . strtoupper(uniqid());
 
-        //ambil user yg sedang login dan cek login (apakah ada data user?)
+        // 3. ambil user yang sedang login & cek login (apakah ada data user?)
         $user = auth('api')->user();
 
         if (!$user) {
             return response()->json([
-                'sucsess' => false,
-                'message' => 'unautorized'
+                'success' => false,
+                'message' => 'Unauthorized!'
             ], 401);
         }
 
-        //mencari data buku dari request
+        // 4. mencari data buku dari request
         $book = Book::find($request->book_id);
 
-        //cek stok buku
+        // 5. cek stok buku
         if ($book->stock < $request->quantity) {
             return response()->json([
-                'sucsess' => false,
-                'message' => 'stok barang gacukup'
+                'success' => false,
+                'message' => 'Stok barang tidak cukup!'
             ], 400);
         }
 
-        // hitung total harga = price * quantity
+        // 6. hitung total harga = price * quantity
         $totalAmount = $book->price * $request->quantity;
 
-        //kurangi stok buku (update)
+        // 7. kurangi stok buku (update)
         $book->stock -= $request->quantity;
-        $book->save(); 
+        $book->save();
 
-        //simpan data transaksi
+        // 8. simpan data transaksi
         $transactions = Transaction::create([
             'order_number' => $uniqueCode,
             'customer_id' => $user->id,
@@ -84,9 +84,9 @@ class TransactionController extends Controller
         ]);
 
         return response()->json([
-                'sucsess' => true,
-                'message' => 'transaksi berhasil dibuat',
-                'data' => $transactions
-            ], 201);
+            'success' => true,
+            'message' => 'Transaction created successfully!',
+            'data' => $transactions
+        ], 201);
     }
 }

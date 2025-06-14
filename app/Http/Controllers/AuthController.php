@@ -12,91 +12,95 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        // setup validator
+        // 1. Setup validator
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:225',
-            'email' => 'required|email|max:225|unique:users',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users',
             'password' => 'required|min:8'
         ]);
 
-        // cek validator
+        // 2. Cek validator
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        //tambah data user
+        // 3. Create user
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password)
         ]);
 
-        // cek keberhasilan
+        // 4. Cek keberhasilan
         if ($user) {
             return response()->json([
-                'siccess' => true,
-                'message' => 'data berhasil ditambah bro',
+                'success' => true,
+                'message' => 'User created successfully',
                 'data' => $user
             ], 201);
         }
 
-        // cek gagal
+        // 5. Cek gagal
         return response()->json([
-            'siccess' => false,
-            'message' => 'data berhasil ditambah bro',
-        ], 409); // conflic
+            'success' => false,
+            'message' => 'User creation faild'
+        ], 409); // Conflict
     }
 
-    public function Login(Request $request)
+    public function login(Request $request)
     {
-        // setup validator
+        // 1. Setup validator
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        // cek validasi
+        // 2. Cek validator
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        // get kredensial dari request
+        // 3. Get kredensial dari request
         $credentials = $request->only('email', 'password');
 
-        // cek kalo gagal
+        // 4. Cek isFailed
         if (!$token = auth()->guard('api')->attempt($credentials)) {
             return response()->json([
-                'siccess' => false,
-                'message' => 'email/password lu salah',
+                'success' => false,
+                'message' => 'Email atau Password Anda salah!'
             ], 401);
         }
 
-        // cek kalo sukses
+        // 5. Cek isSuccess
         return response()->json([
-            'siccess' => true,
-            'message' => 'login berhasil',
+            'success' => true,
+            'message' => 'Login successfully',
             'user' => auth()->guard('api')->user(),
-            'token' => $token
-        ], 201);
+            'token' => $token,
+        ], 200);
     }
 
-    public function logout(Request $request) {
-        //
-        //
+    public function logout(Request $request)
+    {
+        // try
+        // 1. Invalidate token
+        // 2. cek isSuccess
 
-        //
+        // catch
+        // 1. cek isFailed
+
         try {
             JWTAuth::invalidate(JWTAuth::getToken());
 
             return response()->json([
-            'success' => true,
-            'message' => 'logout berhasil',
-        ], 200);
+                'success' => true,
+                'message' => 'Logout successfully!'
+            ], 200);
         } catch (JWTException $e) {
             return response()->json([
-            'success' => false,
-            'message' => 'logout gagal',
-        ], 409);
+                'success' => false,
+                'message' => 'Logout failed!'
+            ], 500);
         }
     }
 }
