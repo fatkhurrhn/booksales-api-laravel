@@ -11,57 +11,36 @@ class BookSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-     #
     public function run(): void
     {
         Book::create([
-            'title' => 'Pulang',
-            'description' => 'Sebuah kisah perjalanan kembali ke akar',
-            'price' => 30000,
-            'stock' => 22,
-            'cover_photo' => 'pulang.jpg',
+            'title' => 'Harry Potter and the Sorcerer\'s Stone',
+            'description' => 'An orphaned boy enrolls in a school of wizardry, where he learns the truth about himself, his family and the terrible evil that haunts the magical world.',
+            'price' => 50000,
+            'stock' => 50,
+            'cover_photo' => 'harry_potter.jpg',
             'genre_id' => 1,
             'author_id' => 1,
         ]);
 
         Book::create([
-            'title' => 'Hujan di Ujung Senja',
-            'description' => 'Romansa yang tumbuh di tengah badai kehidupan',
-            'price' => 35000,
-            'stock' => 15,
-            'cover_photo' => 'hujan.jpg',
+            'title' => 'The Shining',
+            'description' => 'A family heads to an isolated hotel for the winter where an evil and sinister presence influences the father into violence, while his psychic son sees horrific premonitions from both past and future.',
+            'price' => 25000,
+            'stock' => 30,
+            'cover_photo' => 'the_shining.jpg',
             'genre_id' => 2,
             'author_id' => 2,
         ]);
 
         Book::create([
-            'title' => 'Negeri Awan',
-            'description' => 'Petualangan magis di dunia yang tersembunyi di atas langit',
-            'price' => 42000,
-            'stock' => 10,
-            'cover_photo' => 'negeri-awan.jpg',
+            'title' => 'Laskar Pelangi',
+            'description' => 'An inspiring story about the struggle of a group of students and their two teachers in a remote village in Belitung to keep their school alive.',
+            'price' => 40000,
+            'stock' => 75,
+            'cover_photo' => 'laskar_pelangi.jpg',
             'genre_id' => 3,
             'author_id' => 3,
-        ]);
-
-        Book::create([
-            'title' => 'Bayangan Malam',
-            'description' => 'Teror yang datang saat cahaya terakhir padam',
-            'price' => 39000,
-            'stock' => 18,
-            'cover_photo' => 'bayangan.jpg',
-            'genre_id' => 4,
-            'author_id' => 4,
-        ]);
-
-        Book::create([
-            'title' => 'Tawa di Tengah Luka',
-            'description' => 'Kumpulan kisah lucu yang lahir dari tragedi hidup sehari-hari',
-            'price' => 28000,
-            'stock' => 25,
-            'cover_photo' => 'tawa.jpg',
-            'genre_id' => 5,
-            'author_id' => 5,
         ]);
     }
 }
