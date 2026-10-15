@@ -16,7 +16,6 @@ Route::post('/login',    [AuthController::class, 'login']);
 Route::apiResource('/books', BookController::class)->only(['index', 'show']);
 Route::get('/genres',        [GenreController::class, 'index']);
 Route::get('/genres/{id}',   [GenreController::class, 'show']);
-Route::get('/authors',       [AuthorController::class, 'index']);
 Route::get('/authors/{id}',  [AuthorController::class, 'show']);
 
 // 🔐 User authenticated (customer)
